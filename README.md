@@ -7,8 +7,6 @@ This is a github repository of python code for 1D Two-stream instability based o
 <div>
     <p float = 'left'>
         <img src="/result/PIC.png"  width="360" height="240">
-    </p>
-    <p float = 'left'>
         <img src="/result/simulation.gif"  width="360" height="240">
     </p>
 </div>

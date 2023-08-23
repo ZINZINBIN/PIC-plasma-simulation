@@ -178,7 +178,7 @@ class PICsolver:
         plt.xlabel("x pos")
         plt.ylabel("vel")
         plt.xlim([0,self.L])
-        plt.ylim([-10, 10])
+        plt.ylim([-8, 8])
         plt.tight_layout()
         plt.savefig("./result/PIC.png", dpi=160)
         print("# Computation process end")
@@ -186,6 +186,10 @@ class PICsolver:
         if self.use_animation:
             print("# Generating animation file")
             fig, ax = plt.subplots(1,1,figsize = (6,4), facecolor = 'white', dpi=160)
+            
+            idx_h = int(len(pos_list) / 2)
+            pos_list = pos_list[idx_h:]
+            vel_list = vel_list[idx_h:]
             
             def _plot(idx : int, ax:Axes):
                 pos = pos_list[idx]
@@ -198,10 +202,10 @@ class PICsolver:
                 ax.set_xlabel("x pos")
                 ax.set_ylabel("vel")
                 ax.set_xlim([0,self.L])
-                ax.set_ylim([-10, 10])
-
+                ax.set_ylim([-8, 8])
+            
             replay = lambda idx : _plot(idx, ax)
-            idx_max = int((self.tmax - self.tmin) / self.dt)
+            idx_max = len(pos_list) - 1
             indices = [i for i in range(idx_max)]
             ani = animation.FuncAnimation(fig, replay, frames = indices)
             writergif = animation.PillowWriter(fps = self.plot_freq)

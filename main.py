@@ -3,10 +3,10 @@ from src.solver import PICsolver
 
 def parsing():
     parser = argparse.ArgumentParser(description="PIC code for plasma simulation: 1D ")
-    parser.add_argument("--num_particle", type = int, default = 40000)
-    parser.add_argument("--num_mesh", type = int, default = 400)
+    parser.add_argument("--num_particle", type = int, default = 50000)
+    parser.add_argument("--num_mesh", type = int, default = 500)
     parser.add_argument("--t_min", type = float, default = 0)
-    parser.add_argument("--t_max", type = float, default = 50)
+    parser.add_argument("--t_max", type = float, default = 100)
     parser.add_argument("--dt", type = float, default = 1)
     parser.add_argument("--L", type = float, default = 50)
     parser.add_argument("--n0", type = float, default = 1.0)
