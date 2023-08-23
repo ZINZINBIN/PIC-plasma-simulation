@@ -12,7 +12,7 @@ def parsing():
     parser.add_argument("--n0", type = float, default = 1.0)
     parser.add_argument("--vb", type = float, default = 3.0)
     parser.add_argument("--vth", type = float, default = 1.0)
-    parser.add_argument("--max_iters", type = int, default = 128)
+    parser.add_argument("--gamma", type = float, default = 5.0)
     parser.add_argument("--use_animation", type = bool, default = True)
     parser.add_argument("--plot_freq", type = int, default = 10)
     parser.add_argument("--save_dir", type = str, default = "./result/simulation.gif")
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         dt = args['dt'],
         tmin = args['t_min'],
         tmax = args['t_max'],
-        iters = args['max_iters'],
+        gamma = args['gamma'],
         vth = args['vth'],
         vb = args['vb'],
         use_animation=args['use_animation'],

@@ -19,7 +19,7 @@ class PICsolver:
         dt : float, 
         tmin : float, 
         tmax : float, 
-        iters : int,
+        gamma : float,
         vth : float,
         vb : float,
         use_animation:bool=True,
@@ -35,7 +35,7 @@ class PICsolver:
         self.dt = dt                # time difference
         self.tmin = tmin            # minimum time
         self.tmax = tmax            # maximum time
-        self.iters = iters          # iteration numer
+        self.gamma = gamma          # parameters for solving linear equation of variant form of Tri-diagonal matrix
         self.use_animation = use_animation
         self.plot_freq = plot_freq
         self.save_dir = save_dir
@@ -109,11 +109,9 @@ class PICsolver:
         
         self.laplacian /= dx ** 2
     
-    def linear_solve(self, A : np.ndarray, B : np.array, max_iters : int = 32, eps : float = 1e-8):
+    def linear_solve(self, A : np.ndarray, B : np.array, gamma : float = 5.0):
         
         A_new = np.copy(A)
-        gamma = 1.0
-        
         A_new[0,0] -= gamma
         A_new[-1,-1] -= A[0,-1] * A[-1,0] / gamma
 
@@ -221,7 +219,7 @@ class PICsolver:
     def update_acc(self):
         
         # update field for calculating the acceleration
-        self.phi_mesh = self.linear_solve(self.laplacian, self.n - self.n0, self.iters, 1e-8)
+        self.phi_mesh = self.linear_solve(self.laplacian, self.n - self.n0, self.gamma)
         self.E_mesh = (-1) * np.matmul(self.grad, self.phi_mesh)
         E = self.weight_l * self.E_mesh[self.indx_l[:,0]] + self.weight_r * self.E_mesh[self.indx_r[:,0]]
 
