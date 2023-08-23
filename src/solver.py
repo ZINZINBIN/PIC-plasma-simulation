@@ -50,8 +50,8 @@ class PICsolver:
         
         Nh = int(N/2)
         self.Nh = Nh
-        self.v[Nh:-1] *= -1                                     # anti-symmetric configuration
-        self.v *= (1 + 0.1 * np.sin(2 * np.pi * self.x / L))    # add perturbation
+        self.v[Nh:,:] *= -1                                     # anti-symmetric configuration
+        self.v *= (1 + 0.1 * np.sin(2 * np.pi * self.x / L))      # add perturbation
         
         # index paramters for updating each mesh grid
         self.indx_l = np.floor(self.x / self.dx).astype(int)
@@ -75,6 +75,7 @@ class PICsolver:
         
         self.generate_grad()
         self.generate_laplacian()
+        
         
     def generate_grad(self):
         dx = self.L / self.N_mesh
@@ -114,6 +115,8 @@ class PICsolver:
         A_new = np.copy(A)
         A_new[0,0] -= gamma
         A_new[-1,-1] -= A[0,-1] * A[-1,0] / gamma
+        A_new[-1,0] = 0
+        A_new[0,-1] = 0
 
         u = np.zeros((A.shape[1],1))
         u[0,0] = gamma
@@ -121,15 +124,15 @@ class PICsolver:
         
         v = np.zeros((A.shape[1],1))
         v[0,0] = 1
-        v[-1,0] = A[0,1] / gamma
+        v[-1,0] = A[0,-1] / gamma
         
         if B.ndim == 1:
             B = B.reshape(-1,1)
         
-        x1 = Gaussian_Elimination_TriDiagonal(A_new, B)
+        x1 = Gaussian_Elimination_TriDiagonal(A_new,B)
         q = Gaussian_Elimination_TriDiagonal(A_new,u)
         
-        x = x1 - q * np.dot(v.reshape(1,-1),x1.reshape(-1,1)) / (1 + np.dot(v.reshape(1,-1),x1.reshape(-1,1)))
+        x = x1 - q * np.dot(v.reshape(1,-1),x1.reshape(-1,1)) / (1 + np.dot(v.reshape(1,-1),q.reshape(-1,1)))
         
         return x.reshape(-1,1)
     
@@ -187,16 +190,12 @@ class PICsolver:
             print("# Generating animation file")
             fig, ax = plt.subplots(1,1,figsize = (6,4), facecolor = 'white', dpi=160)
             
-            idx_h = int(len(pos_list) / 2)
-            pos_list = pos_list[idx_h:]
-            vel_list = vel_list[idx_h:]
-            
-            def _plot(idx : int, ax:Axes):
+            def _plot(idx : int, ax:Axes, pos_list, vel_list):
+                ax.cla()
+                
                 pos = pos_list[idx]
                 vel = vel_list[idx]
                 
-                ax.cla()
-                ax.clear()
                 ax.scatter(pos[0:self.Nh],vel[0:self.Nh],s=.5,color='blue', alpha=0.5)
                 ax.scatter(pos[self.Nh:], vel[self.Nh:], s=.5,color='red',  alpha=0.5)
                 ax.set_xlabel("x pos")
@@ -204,11 +203,11 @@ class PICsolver:
                 ax.set_xlim([0,self.L])
                 ax.set_ylim([-8, 8])
             
-            replay = lambda idx : _plot(idx, ax)
+            replay = lambda idx : _plot(idx, ax, pos_list, vel_list)
             idx_max = len(pos_list) - 1
             indices = [i for i in range(idx_max)]
             ani = animation.FuncAnimation(fig, replay, frames = indices)
-            writergif = animation.PillowWriter(fps = self.plot_freq)
+            writergif = animation.PillowWriter(fps = self.plot_freq, bitrate = False)
             ani.save(self.save_dir, writergif)
         
             print("# Complete")
@@ -238,7 +237,7 @@ class PICsolver:
         self.weight_r = (self.x - self.indx_l * self.dx) / self.dx
         
         self.indx_r = np.mod(self.indx_r, self.N_mesh)
-        
+
         self.n = np.bincount(self.indx_l[:,0], weights=self.weight_l[:,0], minlength=self.N_mesh)
         self.n += np.bincount(self.indx_r[:,0], weights=self.weight_r[:,0], minlength=self.N_mesh)
         
