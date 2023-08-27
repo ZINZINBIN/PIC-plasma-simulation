@@ -1,5 +1,5 @@
 import argparse
-from src.solver import PICsolver
+from src.PIC1D import PICsolver
 
 def parsing():
     parser = argparse.ArgumentParser(description="PIC code for plasma simulation: 1D ")

@@ -1,9 +1,11 @@
-# Particle-In-Cell code for plasma simulation
+# PIC code for plasma simulation
 ## Introduction
 <p> 
 This is a github repository of python code for 1D Two-stream instability based on PIC method. The baseline code I referred is from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. 
 </p>
 
+## Example
+<p>We developed two-stream instability simulation for 1D and 2D cases using PIC method. The below shows the result of 1D case.</p>
 <div>
     <p float = 'left'>
         <img src="/result/PIC.png"  width="360" height="240">

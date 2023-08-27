@@ -7,7 +7,6 @@ from matplotlib.pyplot import Axes
 from src.utils import Gaussian_Elimination_TriDiagonal
 
 # 1D two-stream instability simulation by solving 1D vlasov equation solver using PIC method
-# linear algebra solver: conjugate-gradient method
 
 class PICsolver:
     def __init__(
