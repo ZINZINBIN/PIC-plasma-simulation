@@ -1,7 +1,7 @@
 # PIC code for plasma simulation
 ## Introduction
 <p> 
-This is a github repository of python code for 1D Two-stream instability based on PIC method. The baseline code I referred is from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. 
+This is a github repository of python code for 1D Two-stream instability based on PIC method. The baseline code referred is from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. 
 </p>
 
 ## Example

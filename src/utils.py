@@ -1,6 +1,11 @@
 import numpy as np
 from typing import Union
 from scipy.linalg import lu
+from numba import jit
+
+def compute_hamiltonian(v:np.array, E:np.array):
+    H = 0.5 * np.sum(v * v) + 1 / 8 / np.pi * np.sum(E*E)
+    return H
 
 def matmul_vec(A : np.ndarray, x : np.array):
     result = np.zeros_like(x)
@@ -77,7 +82,7 @@ def SORsolver(A_origin:np.ndarray, x_origin:np.ndarray, b_origin:np.ndarray, w =
         x_new[idx] = (1-w) * x[idx] + w / (A_diag[idx] + 1e-8 * np.sign(A_diag[idx])) * (b[idx] - L[idx, :]@x_new - U[idx, :]@x)
 
     return x_new
-    
+
 def QRsolver(A_origin, b_origin):
     ''' solve Grad-Shafranov Equation using cholesky factorization
     - A.T @ A => positive definite matrix
