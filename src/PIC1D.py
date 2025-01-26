@@ -1,13 +1,13 @@
 import numpy as np
-import scipy as sp
+import os
 from tqdm.auto import tqdm
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
+from typing import Literal, Optional
 from src.utils import Gaussian_Elimination_TriDiagonal, compute_hamiltonian
 
 # 1D two-stream instability simulation by solving 1D vlasov equation solver using PIC method
-
 class PICsolver:
     def __init__(
         self, 
@@ -22,14 +22,16 @@ class PICsolver:
         vth : float,
         vb : float,
         A : float = 0.1,
+        method :Literal["midpoint","leapfrog"] = "leapfrog",
         use_animation:bool=True,
         plot_freq : int = 4,  
-        save_dir : str = "./result/simulation.gif"
+        save_dir : Optional[str] = "./result/"
         ):
 
         # setup
         self.N = N                  # num of particles
         self.N_mesh = N_mesh        # num of mesh cell
+        self.method = method        # algorithm for use : midpoint or leapfrog
         self.n0 = n0                # average electron density
         self.L = L                  # box size
         self.dt = dt                # time difference
@@ -146,47 +148,63 @@ class PICsolver:
 
         Nt = int(np.ceil((self.tmax - self.tmin) / self.dt))
 
-        # we have to compute initial acceleration
+        # initialize density
+        self.update_density()
+
+        # initialize acc
         self.update_acc()
 
-        if self.use_animation:
-            pos_list = []
-            vel_list = []
-            E_list = []
+        # snapshot 
+        pos_list = []
+        vel_list = []
+        E_list = []
 
-            E_init = compute_hamiltonian(np.copy(self.v), np.copy(self.a))
+        E_init = compute_hamiltonian(np.copy(self.v), np.copy(self.a))
 
-            pos_list.append(np.copy(self.x))
-            vel_list.append(np.copy(self.v))
-            E_list.append(E_init)
-
-        else:
-            pos_list = None
-            vel_list = None
-            E_list = None
-            E_init = None
+        pos_list.append(np.copy(self.x))
+        vel_list.append(np.copy(self.v))
+        E_list.append(E_init)
 
         for i in tqdm(range(Nt), 'PIC simulation process'):
 
-            # velocity update
-            self.update_velocity()
+            if self.method == "midpoint":
+                # velocity update
+                self.update_velocity()
 
-            # position update
-            self.update_position()
+                # position update
+                self.update_position()
 
-            # density update
-            self.update_density()
+                # density update
+                self.update_density()
 
-            # acceleration update
-            self.update_acc()
+                # acceleration update
+                self.update_acc()
 
-            # velocity update with 1/2 kick
-            self.update_velocity()
+            elif self.method == "leapfrog":
+                # velocity update
+                self.update_velocity()
+
+                # position update
+                self.update_position()
+
+                # density update
+                self.update_density()
+
+                # acceleration update
+                self.update_acc()
+
+                # velocity update with 1/2 kick
+                self.update_velocity()
 
             if pos_list is not None:
                 pos_list.append(np.copy(self.x))
                 vel_list.append(np.copy(self.v))
                 E_list.append(compute_hamiltonian(np.copy(self.v), np.copy(self.a)))
+
+        # file check
+        if self.save_dir is not None:
+            if not os.path.exists(self.save_dir):
+                os.mkdir(self.save_dir)
 
         plt.figure(figsize = (6,4))
         plt.scatter(self.x[0:self.Nh],self.v[0:self.Nh],s=.4,color='blue', alpha=0.5)
@@ -196,7 +214,10 @@ class PICsolver:
         plt.xlim([0,self.L])
         plt.ylim([-8, 8])
         plt.tight_layout()
-        plt.savefig("./result/PIC.png", dpi=120)
+        
+        if self.save_dir is not None:
+            plt.savefig(os.path.join(self.save_dir, "PIC_{}.png".format(self.method)), dpi=120)
+
         print("# Simputation process end")
 
         E_list = np.array(E_list)
@@ -208,7 +229,9 @@ class PICsolver:
         plt.xlabel("Time step")
         plt.ylabel("Hamiltonian")
         plt.tight_layout()
-        plt.savefig("./result/hamiltonian.png", dpi=120)
+        
+        if self.save_dir is not None:
+            plt.savefig(os.path.join(self.save_dir,"hamiltonian_{}.png".format(self.method)), dpi=120)
 
         if self.use_animation:
             print("# Generating animation file")
@@ -231,12 +254,19 @@ class PICsolver:
             indices = [i for i in range(idx_max)]
             ani = animation.FuncAnimation(fig, replay, frames = indices)
             writergif = animation.PillowWriter(fps = self.plot_freq, bitrate = False)
-            ani.save(self.save_dir, writergif)
+            ani.save(os.path.join(self.save_dir,"simulation_{}.gif".format(self.method)), writergif)
 
             print("# Complete")
+        
+        return pos_list, vel_list, E_list
 
     def update_velocity(self):
-        self.v += self.a * self.dt / 2.0
+
+        if self.method == "midpoint":
+            self.v += self.a * self.dt
+
+        elif self.method == "leapfrog":
+            self.v += self.a * self.dt / 2.0
 
     def update_position(self):
         self.x += self.v * self.dt

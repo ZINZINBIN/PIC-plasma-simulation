@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
 from typing import List, Optional
 
-from src.dist import Distribution
+from src.dist import BasicDistribution
 from src.utils import Gaussian_Elimination_TriDiagonal, compute_hamiltonian
 
 class PICsolver:
@@ -20,8 +20,7 @@ class PICsolver:
         tmin: float,
         tmax: float,
         gamma: float,
-        vth: float,
-        init_dist:Optional[Distribution] = None,
+        init_dist: Optional[BasicDistribution] = None,
         use_animation: bool = True,
         plot_freq: int = 4,
         save_dir: str = "./result/simulation.gif",
@@ -55,7 +54,7 @@ class PICsolver:
         self.init_dist = init_dist
 
         # Initialization
-        self.initialize()
+        self.initialize(init_dist)
 
         # index paramters for updating each mesh grid
         self.indx_l = np.floor(self.x / self.dx).astype(int)
@@ -68,12 +67,8 @@ class PICsolver:
         self.indx_r = np.mod(self.indx_r, N_mesh)
 
         # electron density
-        self.n = np.bincount(
-            self.indx_l[:, 0], weights=self.weight_l[:, 0], minlength=N_mesh
-        )
-        self.n += np.bincount(
-            self.indx_r[:, 0], weights=self.weight_r[:, 0], minlength=N_mesh
-        )
+        self.n = np.bincount(self.indx_l[:, 0], weights=self.weight_l[:, 0], minlength=N_mesh)
+        self.n += np.bincount(self.indx_r[:, 0], weights=self.weight_r[:, 0], minlength=N_mesh)
 
         self.n *= self.n0 * self.L / self.N / self.dx
 
@@ -81,24 +76,27 @@ class PICsolver:
         self.grad = np.zeros((N_mesh, N_mesh))
         self.laplacian = np.zeros((N_mesh, N_mesh))
 
+        # Mesh for 1st derivative and 2nd derivative
         self.generate_grad()
         self.generate_laplacian()
 
-    def initialize(self, init_dist:Optional[Distribution]):
-        
-        np.random.seed(42)
-        if init_dist is None:  # Beam injection case for 1D space
-            self.x = np.random.rand(self.N, 1) * self.L  # initialize the position of particles
-            self.v = self.vth * np.random.randn(self.N, 1)  # initialize the velocity of particles
-            self.a = np.zeros((self.N, 1))
+    def initialize(self, init_dist: Optional[BasicDistribution]):
 
-            Nh = int(self.N / 2)
+        if init_dist is None:
+            vth = 1.0
+            vb = 3.0
+            A = 0.1
+            self.x = np.random.rand(self.N,1) * self.L            
+            self.v = vth * np.random.randn(self.N,1) + vb    
+            Nh = int(self.N/2)
             self.Nh = Nh
-            self.v[Nh:, :] *= -1  # anti-symmetric configuration
-            self.v *= 1 + 0.1 * np.sin(2 * np.pi * self.x / self.L)  # add perturbation
+            self.v[Nh:] *= -1                                     
+            self.v *= (1 + A * np.sin(2 * np.pi * self.x / self.L)) 
 
         else:
-            self.x, self.v, self.a = init_dist.sample(self.N)
+            x,v = init_dist.get_sample()
+            self.x = x
+            self.v = v
 
     def generate_grad(self):
         dx = self.L / self.N_mesh
@@ -165,7 +163,10 @@ class PICsolver:
 
         Nt = int(np.ceil((self.tmax - self.tmin) / self.dt))
 
-        # we have to compute initial acceleration
+        # initialize density
+        self.update_density()
+        
+        # initialize acc
         self.update_acc()
 
         if self.use_animation:
@@ -197,25 +198,22 @@ class PICsolver:
             # acceleration update
             self.update_acc()
 
-            # velocity update with 1/2 kick
-            self.update_velocity()
-
             if pos_list is not None:
-                pos_list.append(self.x)
-                vel_list.append(self.v)
-                E_list.append(compute_hamiltonian(self.v, self.a))
+                pos_list.append(np.copy(self.x))
+                vel_list.append(np.copy(self.v))
+                E_list.append(compute_hamiltonian(np.copy(self.v), np.copy(self.a)))
 
         plt.figure(figsize=(6, 4))
         plt.scatter(
             self.x[0 : self.Nh], self.v[0 : self.Nh], s=0.5, color="blue", alpha=0.5
         )
         plt.scatter(self.x[self.Nh :], self.v[self.Nh :], s=0.5, color="red", alpha=0.5)
-        plt.xlabel("x pos")
-        plt.ylabel("vel")
+        plt.xlabel("x")
+        plt.ylabel("v")
         plt.xlim([0, self.L])
         plt.ylim([-8, 8])
         plt.tight_layout()
-        plt.savefig("./result/PIC.png", dpi=160)
+        plt.savefig("./result/SympPIC.png", dpi=120)
         print("# Simputation process end")
 
         E_list = np.array(E_list)
@@ -227,11 +225,11 @@ class PICsolver:
         plt.xlabel("Time step")
         plt.ylabel("Hamiltonian")
         plt.tight_layout()
-        plt.savefig("./result/hamiltonian.png", dpi=160)
+        plt.savefig("./result/hamiltonian_symplectic.png", dpi=120)
 
         if self.use_animation:
             print("# Generating animation file")
-            fig, ax = plt.subplots(1, 1, figsize=(6, 4), facecolor="white", dpi=160)
+            fig, ax = plt.subplots(1, 1, figsize=(6, 4), facecolor="white", dpi=120)
 
             def _plot(idx: int, ax: Axes, pos_list, vel_list):
                 ax.cla()
@@ -245,8 +243,8 @@ class PICsolver:
                 ax.scatter(
                     pos[self.Nh :], vel[self.Nh :], s=0.5, color="red", alpha=0.5
                 )
-                ax.set_xlabel("x pos")
-                ax.set_ylabel("vel")
+                ax.set_xlabel("x")
+                ax.set_ylabel("v")
                 ax.set_xlim([0, self.L])
                 ax.set_ylim([-8, 8])
 
@@ -260,14 +258,13 @@ class PICsolver:
             print("# Complete")
 
     def update_velocity(self):
-        self.v += self.a * self.dt / 2.0
+        self.v += self.a * self.dt
 
     def update_position(self):
         self.x += self.v * self.dt
         self.x = np.mod(self.x, self.L)
 
     def update_acc(self):
-
         # update field for calculating the acceleration
         self.phi_mesh = self.linear_solve(self.laplacian, self.n - self.n0, self.gamma)
         self.E_mesh = (-1) * np.matmul(self.grad, self.phi_mesh)
