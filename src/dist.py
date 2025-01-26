@@ -28,6 +28,7 @@ class BumpOnTail1D(BasicDistribution):
         sigma: float = 0.5,
         beta: float = 5.95,
         n_samples: int = 40000,
+        L:float = 10,
     ):
         # parameters
         self.eta = eta
@@ -35,6 +36,7 @@ class BumpOnTail1D(BasicDistribution):
         self.v0 = v0
         self.sigma = sigma
         self.beta = beta
+        self.L = L
 
         self.initialize(n_samples)
 
@@ -56,7 +58,7 @@ class BumpOnTail1D(BasicDistribution):
         return prob
 
     def get_target_prob(self, x:float, v:float):
-        prob = 1 / np.sqrt(2 * np.pi) / self.eta * np.exp(-0.5 / self.sigma**2 * x**2) * (
+        prob = 1 / np.sqrt(2 * np.pi) / self.eta * np.exp(-0.5 / self.sigma**2 * (x - self.L /2)**2) * (
             1 / (1 + self.a) * 1 / np.sqrt(2 * np.pi) * np.exp(-0.5 * v**2)
             + self.a / (1 + self.a) * 1 / np.sqrt(2 * np.pi) / self.sigma * np.exp(-0.5 * (v-self.v0)**2 / self.sigma ** 2)
         )
@@ -68,7 +70,7 @@ class BumpOnTail1D(BasicDistribution):
 
         while len(pos) < n_samples:
 
-            x = np.random.uniform(-10, 10, size = batch)
+            x = np.random.uniform(0, self.L, size = batch)
             v = np.random.uniform(-10, 10, size = batch)
             u = np.random.uniform(0, 1.0, size = batch)
 
@@ -88,6 +90,6 @@ class BumpOnTail1D(BasicDistribution):
         return self.beta ** 2 * x
 
     def compute_trajectory(self, t:float):
-        x = self.v_init * np.sin(self.beta * t) / self.beta + self.x_init * np.cos(self.beta * t)
-        v = (-1) * self.x_init * np.sin(self.beta * t) * self.beta + self.v_init * np.cos(self.beta * t)
+        x = self.v_init * np.sin(self.beta * t) / self.beta + (self.x_init - self.L / 2) * np.cos(self.beta * t) + self.L / 2
+        v = (-1) * (self.x_init - self.L / 2) * np.sin(self.beta * t) * self.beta + self.v_init * np.cos(self.beta * t)
         return x,v

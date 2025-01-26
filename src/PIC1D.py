@@ -227,7 +227,7 @@ class PICsolver:
         plt.figure(figsize = (6,4))
         plt.plot(np.arange(len(E_list)), E_list, 'b')
         plt.xlabel("Time step")
-        plt.ylabel("Hamiltonian")
+        plt.ylabel("Relative error ($(H(t)-H(t=0))/H(t=0)$)")
         plt.tight_layout()
         
         if self.save_dir is not None:
