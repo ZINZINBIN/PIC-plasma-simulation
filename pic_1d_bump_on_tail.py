@@ -41,6 +41,7 @@ if __name__ == "__main__":
         tmax = args['t_max'],
         gamma = args['gamma'],
         init_dist= dist,
+        E_external=lambda x : dist.compute_E_field(x-args['L']/2),
         use_animation=args['use_animation'],
         plot_freq=args['plot_freq'],  
         save_dir = args['save_dir']

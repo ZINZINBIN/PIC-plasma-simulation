@@ -5,12 +5,13 @@ from tqdm.auto import tqdm
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import Axes
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 from src.dist import BasicDistribution
-from src.utils import Gaussian_Elimination_TriDiagonal, compute_hamiltonian
+from src.utils import Gaussian_Elimination_TriDiagonal, compute_hamiltonian, SOR
 
 class PICsolver:
+
     def __init__(
         self,
         N: int,
@@ -22,6 +23,8 @@ class PICsolver:
         tmax: float,
         gamma: float,
         init_dist: Optional[BasicDistribution] = None,
+        E_external: Optional[Callable] = None,
+        B_external: Optional[Callable] = None,
         use_animation: bool = True,
         plot_freq: int = 4,
         save_dir: Optional[str] = None,
@@ -40,16 +43,15 @@ class PICsolver:
         self.plot_freq = plot_freq
         self.save_dir = save_dir
 
+        # External fields
+        self.E_external = E_external
+        self.B_external = B_external
+
         # particle information
         self.dx = L / N_mesh
         self.x = np.zeros((N,1))
         self.v = np.zeros((N,1))
         self.a = np.zeros((N,1))
-
-        # # Symplectic integration
-        # self.dHdq = np.zeros((N_mesh, N_mesh))
-        # self.dHdp = np.zeros((N_mesh, N_mesh))
-        # self.H = np.zeros((N, 1))
 
         # distribution
         self.init_dist = init_dist
@@ -76,6 +78,10 @@ class PICsolver:
         # gradient field and laplacian of potential
         self.grad = np.zeros((N_mesh, N_mesh))
         self.laplacian = np.zeros((N_mesh, N_mesh))
+        
+        # Field quantities
+        self.phi_mesh = None
+        self.E_mesh = None
 
         # Mesh for 1st derivative and 2nd derivative
         self.generate_grad()
@@ -132,8 +138,15 @@ class PICsolver:
 
         self.laplacian /= dx**2
 
-    def linear_solve(self, A: np.ndarray, B: np.array, gamma: float = 5.0):
-        x = sp.linalg.solve(A,B, assume_a = "gen")
+    def linear_solve(self, A: np.ndarray, B: np.array, x_ref:Optional[np.ndarray] = None, gamma: float = 5.0):
+        
+        if x_ref is None:
+            # scipy solver
+            x = sp.linalg.solve(A, B, assume_a = "gen")
+        else:
+            # SOR solver
+            x = SOR(A,B,x_ref, 1.0, 32, 1e-8)
+        
         return x.reshape(-1, 1)
 
     def solve(self):
@@ -145,21 +158,17 @@ class PICsolver:
 
         # initialize acc
         self.update_acc()
-        
-        if self.use_animation:
-            pos_list = []
-            vel_list = []
-            E_list = []
 
-            E_init = compute_hamiltonian(self.v, self.a)
+        # snapshot
+        pos_list = []
+        vel_list = []
+        E_list = []
 
-            pos_list.append(self.x)
-            vel_list.append(self.v)
+        E_init = compute_hamiltonian(np.copy(self.v), np.copy(self.a))
 
-        else:
-            pos_list = None
-            vel_list = None
-            E_list = None
+        pos_list.append(np.copy(self.x))
+        vel_list.append(np.copy(self.v))
+        E_list.append(E_init)
 
         for i in tqdm(range(Nt), "PIC simulation process"):
 
@@ -244,8 +253,8 @@ class PICsolver:
         self.x = np.mod(self.x, self.L)
 
     def update_acc(self):
-        # update field for calculating the acceleration
-        self.phi_mesh = self.linear_solve(self.laplacian, self.n - self.n0, self.gamma)
+        # update field for calculating the acceleration         
+        self.phi_mesh = self.linear_solve(self.laplacian, self.n - self.n0, self.phi_mesh, self.gamma)
         self.E_mesh = (-1) * np.matmul(self.grad, self.phi_mesh)
         E = (
             self.weight_l * self.E_mesh[self.indx_l[:, 0]]
@@ -254,6 +263,9 @@ class PICsolver:
 
         # update acceleration
         self.a = -E
+        
+        if self.E_external is not None:
+            self.a += self.E_external(self.x) * (-1)
 
     def update_density(self):
         self.indx_l = np.floor(self.x / self.dx).astype(int)
@@ -263,7 +275,7 @@ class PICsolver:
         self.weight_r = (self.x - self.indx_l * self.dx) / self.dx
 
         self.indx_r = np.mod(self.indx_r, self.N_mesh)
-    
+
         self.n = np.bincount(
             self.indx_l[:, 0], weights=self.weight_l[:, 0], minlength=self.N_mesh
         )
