@@ -1,11 +1,12 @@
 import numpy as np
 from typing import Union, Optional
-from scipy.linalg import lu
-from numba import jit
 
-def compute_hamiltonian(v:np.array, E:np.array):
-    H = 0.5 * np.sum(v * v) + 1 / 8 / np.pi * np.sum(E*E)
+def compute_hamiltonian(v: np.array, E_mesh: np.array, dx: float):
+    KE = 0.5 * np.sum(v * v)
+    PE = 1 / 8 / np.pi * np.sum(E_mesh * E_mesh) * dx
+    H = KE + PE
     return H
+
 
 def matmul_vec(A : np.ndarray, x : np.array):
     result = np.zeros_like(x)

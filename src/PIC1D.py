@@ -159,7 +159,7 @@ class PICsolver:
         vel_list = []
         E_list = []
 
-        E_init = compute_hamiltonian(np.copy(self.v), np.copy(self.a))
+        E_init = compute_hamiltonian(np.copy(self.v), np.copy(self.E_mesh), self.dx)
 
         pos_list.append(np.copy(self.x))
         vel_list.append(np.copy(self.v))
@@ -199,7 +199,7 @@ class PICsolver:
             if pos_list is not None:
                 pos_list.append(np.copy(self.x))
                 vel_list.append(np.copy(self.v))
-                E_list.append(compute_hamiltonian(np.copy(self.v), np.copy(self.a)))
+                E_list.append(compute_hamiltonian(np.copy(self.v), np.copy(self.E_mesh), self.dx))
 
         # file check
         if self.save_dir is not None:
