@@ -1,0 +1,4 @@
+# job
+*.log
+*.err
+*.slurm
