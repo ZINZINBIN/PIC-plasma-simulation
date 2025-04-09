@@ -1,12 +1,18 @@
-# PIC code for plasma simulation
+# Electrostatic Particle-In-Cell Plasma Simulation
 ## Introduction
 <p> 
     This is a github repository of python code for Two-stream instability based on PIC method. The baseline code referred is from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. For the faster computation in field solver, Tri-diagonal Gaussian elimiation method is utilized for 1-dimensional two-stream instability simulation. For initial condition, we applied adding beam velocity with reversion of the sign in half of electrons, then applying the sinusoidal perturabtion in overall electron velocity distribution.
 </p>
 
 ## How to execute
+### Two-stream instability simulation
 ```
     python3 pic_1d_two_stream.py --num_particles {# of particles}
+```
+
+### Bump-on-tail instability simluation
+```
+    python3 pic_1d_bump_on_tail.py --num_particles {# of particles}
 ```
 
 ## Simulation
@@ -26,13 +32,13 @@
 
 <div>
     <p float = 'left'>
-        <img src="/result/two-stream_evolution_CIC_leapfrog"  width="100%">
+        <img src="/result/two-stream_evolution_CIC_leapfrog.png"  width="100%">
     </p>
 </div>
 
 <div>
     <p float = 'left'>
-        <img src="/result/two-stream_evolution_dist_CIC_leapfrog"  width="100%">
+        <img src="/result/two-stream_evolution_dist_CIC_leapfrog.png"  width="100%">
     </p>
 </div>
 
