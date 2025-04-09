@@ -42,6 +42,7 @@ class BumpOnTail1D(BasicDistribution):
         state = self.rejection_sampling(n_samples)
         self.x_init = state[:, 0]
         self.v_init = state[:, 1]
+        self.high_indx = self.inject_high_electron_indice(self.v_init)
 
     def get_sample(self):
         return self.x_init, self.v_init
@@ -95,3 +96,7 @@ class BumpOnTail1D(BasicDistribution):
         samples[:,1] = vel
 
         return samples
+    
+    def inject_high_electron_indice(self, v:np.ndarray):
+        indice = np.where(v > self.v0 - 1.5 * self.sigma)[0]
+        return indice

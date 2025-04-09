@@ -1,6 +1,6 @@
 import argparse, os
 from src.PIC import PIC
-from src.util import generate_PIC_figure, generate_PIC_snapshot, generate_hamiltonian_analysis, generate_PIC_gif
+from src.util import generate_PIC_figure, generate_PIC_snapshot, generate_hamiltonian_analysis, generate_PIC_gif, generate_distribution_snapshot, generate_distribution_figure
 
 def parsing():
     parser = argparse.ArgumentParser(description="1D Electrostatic Particle-In-Cell code for plasma kinetic simulation")
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     )
 
     snapshot, E, KE, PE = sim.solve()
-
+    
     # file check
     if not os.path.exists(args['save_dir']):
         os.mkdir(args["save_dir"])
@@ -56,6 +56,10 @@ if __name__ == "__main__":
     generate_PIC_snapshot(snapshot[:,-1], args['save_dir'], "{}_snapshot_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
     generate_PIC_figure(snapshot, args['save_dir'], "{}_evolution_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
     generate_hamiltonian_analysis(args['t_max'], E, KE, PE, args['save_dir'], "{}_hamiltonian_{}_{}.png".format(args['simcase'], args['interpol'], args['method']))
+
+    # plot distribution
+    generate_distribution_snapshot(snapshot[:,-1], args["save_dir"],"{}_snapshot_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
+    generate_distribution_figure(snapshot, args["save_dir"],"{}_evolution_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
 
     if args['use_animation']:
         generate_PIC_gif(snapshot, args['save_dir'], "{}_simulation_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'])

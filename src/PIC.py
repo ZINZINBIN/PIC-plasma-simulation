@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 from tqdm.auto import tqdm
 from typing import Literal, Optional
-from src.util import compute_hamiltonian
+from src.util import compute_hamiltonian, compute_distribution
 from src.solve import Gaussian_Elimination_Improved, Gaussian_Elimination_TriDiagonal, SOR
 from src.integration import explicit_midpoint, leapfrog, verlet, implicit_midpoint
 from src.interpolate import CIC, TSC
@@ -99,6 +99,9 @@ class PIC:
             self.x = x.reshape(-1, 1)
             self.v = v.reshape(-1, 1)
 
+            # Initial condition
+            # self.v *= 1 + self.A * np.sin(2 * np.pi * self.x / self.L)  # add perturbation
+
     def generate_grad(self):
         dx = self.L / self.N_mesh
 
@@ -168,9 +171,9 @@ class PIC:
     def update_E_field(self):
 
         self.phi_mesh = self.linear_solve(self.laplacian, self.n - self.n0, self.phi_mesh, self.gamma)
-        
+
         self.E_mesh = (-1) * self.grad @ self.phi_mesh
-        
+
         if self.interpol == "CIC":
             self.E = self.weight_l * self.E_mesh[self.indx_l[:, 0]] + self.weight_r * self.E_mesh[self.indx_r[:, 0]]
             self.phi = self.weight_l * self.phi_mesh[self.indx_l[:, 0]] + self.weight_r * self.phi_mesh[self.indx_r[:, 0]]
@@ -248,10 +251,10 @@ class PIC:
 
         if x_ref is None and self.solver == "SOR":
             x = sp.linalg.solve(A, B, assume_a="gen")
-                   
+
         else:
             if self.solver == "SOR":
-                x = SOR(A, B, x_ref, 1.0, 32, 1e-10)
+                x = SOR(A, B, x_ref, 1.2, 64, 1e-10)
 
             elif self.solver == "Gauss":
                 x = Gaussian_Elimination_Improved(A, B, gamma)

@@ -15,6 +15,10 @@ def compute_hamiltonian(v: np.array, E_mesh: np.array, dx: float, return_all:boo
     else:
         return H
 
+def compute_distribution(v:np.array, vmin:float, vmax:float, interval:int):
+    hist, bin_edges = np.histogram(v.reshape(-1), bins = interval, range = [vmin, vmax], density = True)
+    return hist, bin_edges
+
 def generate_hamiltonian_analysis(
     tmax:float,
     H:np.ndarray,
@@ -196,3 +200,193 @@ def generate_PIC_gif(
     # Save animation
     ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
     plt.close(fig)
+    
+def generate_bump_on_tail_gif(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+    plot_freq:int = 32,
+    high_electron_indice:Optional[np.ndarray] = None,
+    ):
+
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+    os.makedirs(save_dir, exist_ok=True)
+
+    fig, ax = plt.subplots(1, 1, figsize=(5, 4), facecolor="white", dpi=120)
+
+    # Snapshot info
+    N = snapshot.shape[0]//2
+    Nt = snapshot.shape[1]
+    
+    if high_electron_indice is not None:
+        low_electron_indice = np.array([i for i in range(0,N) if i not in high_electron_indice])
+    else:
+        low_electron_indice = np.arange(0,N)
+    
+    ax.cla()
+    scatter_b = ax.scatter([], [], s=0.4, color="blue", alpha=0.5)
+    scatter_r = ax.scatter([], [], s=0.4, color="red", alpha=0.5)
+    ax.set_xlabel("x")
+    ax.set_ylabel("v")
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(vmin, vmax)
+    ax.set_title("PIC simulation")
+
+    fig.tight_layout()
+
+    def _update(idx):
+        scatter_b.set_offsets(np.column_stack((snapshot[low_electron_indice, idx], snapshot[low_electron_indice + N, idx])))
+        
+        if high_electron_indice is not None:
+            scatter_r.set_offsets(np.column_stack((snapshot[high_electron_indice, idx], snapshot[high_electron_indice + N, idx])))
+        fig.tight_layout()
+        return scatter_b, scatter_r
+
+    # Create animation
+    ani = animation.FuncAnimation(fig, _update, frames=Nt, interval = 1000// plot_freq, blit=True)
+
+    # Save animation
+    ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
+    plt.close(fig)
+
+def generate_distribution_snapshot(
+    snapshot:np.ndarray,
+    save_dir: Optional[str],
+    filename: Optional[str],
+    xmin: Optional[float] = 0.0,
+    xmax: Optional[float] = 50.0,
+    vmin: Optional[float] = -10.0,
+    vmax: Optional[float] = 10.0,
+):
+    # check directory
+    if save_dir is not None:
+
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        filepath = os.path.join(save_dir, filename)
+    else:
+        filepath = None
+
+    # info
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4), facecolor="white", dpi=120)
+    axes = axes.ravel()
+
+    x = snapshot[:len(snapshot)//2]
+    v = snapshot[len(snapshot)//2:]
+
+    fx, fx_bin_edge = compute_distribution(x, xmin, xmax, interval = 64)
+    fv, fv_bin_edge = compute_distribution(v, vmin, vmax, interval = 64)
+
+    axes[0].cla()
+    axes[0].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("Distribution f(x)")
+    axes[0].set_xlim([xmin, xmax])
+    axes[0].set_ylim([0,1])
+
+    axes[1].cla()
+    axes[1].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
+    axes[1].set_xlabel("v")
+    axes[1].set_ylabel("Distribution f(v)")
+    axes[1].set_xlim([vmin, vmax])
+    axes[1].set_ylim([0,1])
+
+    fig.tight_layout()
+
+    if filepath is not None:
+        plt.savefig(filepath, dpi=120)
+
+    return fig, axes
+
+def generate_distribution_figure(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+):
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    Nh = N // 2
+    Nt = snapshot.shape[1]
+
+    fig, axes = plt.subplots(2, 3, figsize=(12, 8), facecolor="white", dpi=120)
+
+    x = snapshot[: len(snapshot) // 2, 0]
+    v = snapshot[len(snapshot) // 2 :, 0]
+
+    fx, fx_bin_edge = compute_distribution(x, xmin, xmax, interval=64)
+    fv, fv_bin_edge = compute_distribution(v, vmin, vmax, interval=64)
+
+    axes[0,0].cla()
+    axes[0,0].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
+    axes[0,0].set_xlabel("x")
+    axes[0,0].set_ylabel("Distribution f(x) at $t=0$")
+    axes[0,0].set_xlim([xmin, xmax])
+    axes[0,0].set_ylim([0, 1])
+    
+    axes[1,0].cla()
+    axes[1,0].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
+    axes[1,0].set_xlabel("v")
+    axes[1,0].set_ylabel("Distribution f(v) at $t=0$")
+    axes[1,0].set_xlim([vmin, vmax])
+    axes[1,0].set_ylim([0, 1])
+    
+    x = snapshot[: len(snapshot) // 2, Nt//2]
+    v = snapshot[len(snapshot) // 2 :, Nt//2]
+
+    fx, fx_bin_edge = compute_distribution(x, xmin, xmax, interval=64)
+    fv, fv_bin_edge = compute_distribution(v, vmin, vmax, interval=64)
+
+    axes[0,1].cla()
+    axes[0,1].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
+    axes[0,1].set_xlabel("x")
+    axes[0,1].set_ylabel("Distribution f(x) at $t=t_{max}/2$")
+    axes[0,1].set_xlim([xmin, xmax])
+    axes[0,1].set_ylim([0, 1])
+    
+    axes[1,1].cla()
+    axes[1,1].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
+    axes[1,1].set_xlabel("v")
+    axes[1,1].set_ylabel("Distribution f(v) at $t=t_{max}/2$")
+    axes[1,1].set_xlim([vmin, vmax])
+    axes[1,1].set_ylim([0, 1])
+
+    x = snapshot[: len(snapshot) // 2, -1]
+    v = snapshot[len(snapshot) // 2 :, -1]
+
+    fx, fx_bin_edge = compute_distribution(x, xmin, xmax, interval=64)
+    fv, fv_bin_edge = compute_distribution(v, vmin, vmax, interval=64)
+
+    axes[0,2].cla()
+    axes[0,2].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
+    axes[0,2].set_xlabel("x")
+    axes[0,2].set_ylabel("Distribution f(x) at $t=t_{max}$")
+    axes[0,2].set_xlim([xmin, xmax])
+    axes[0,2].set_ylim([0, 1])
+    
+    axes[1,2].cla()
+    axes[1,2].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
+    axes[1,2].set_xlabel("v")
+    axes[1,2].set_ylabel("Distribution f(v) at $t=t_{max}$")
+    axes[1,2].set_xlim([vmin, vmax])
+    axes[1,2].set_ylim([0, 1])
+
+    fig.tight_layout()
+    plt.savefig(filepath, dpi=120)
+
+    return fig, axes
