@@ -100,7 +100,8 @@ class PIC:
             self.v = v.reshape(-1, 1)
 
             # Initial condition
-            # self.v *= 1 + self.A * np.sin(2 * np.pi * self.x / self.L)  # add perturbation
+            n = 5
+            self.v *= (1 + self.A * np.sin(2 * np.pi * n * self.x / self.L))  # add perturbation
 
     def generate_grad(self):
         dx = self.L / self.N_mesh

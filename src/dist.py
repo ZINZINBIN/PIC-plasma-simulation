@@ -67,11 +67,11 @@ class BumpOnTail1D(BasicDistribution):
             + self.a / (1 + self.a) * 1 / np.sqrt(2 * np.pi) / self.sigma * np.exp(-0.5 * (v-self.v0)**2 / self.sigma ** 2)
         )
         '''
-
+        
         prob = (
             1 / (1 + self.a) * 1 / np.sqrt(2 * np.pi) * np.exp(-0.5 * v**2)
             + self.a / (1 + self.a) * 1 / np.sqrt(2 * np.pi) / self.sigma * np.exp(-0.5 * (v-self.v0)**2 / self.sigma ** 2)
-        )
+        ) 
 
         return prob
 
@@ -98,5 +98,5 @@ class BumpOnTail1D(BasicDistribution):
         return samples
     
     def inject_high_electron_indice(self, v:np.ndarray):
-        indice = np.where(v > self.v0 - 1.5 * self.sigma)[0]
+        indice = np.where(v > self.v0 - 2.5 * self.sigma)[0]
         return indice

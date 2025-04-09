@@ -30,6 +30,7 @@
 ```
 
 ## Simulation
+### Two-stream instability
 <p>
     We developed two-stream instability simulation for 1D case using PIC method. The below shows the result of 1D case with leapfrog method (left) and implicit midpoint method (right).
 </p>
@@ -60,19 +61,25 @@
     </p>
 </div>
 
+### Bump-on-tail instability
 <p> 
-    The hamiltonian computed for each step shows that implicit midpoint method has better performance in terms of energy conservation compared with explicit method. 
+    This code also simulates any initial condition which is given by any probability distribution. Rejection sampling is used to select random particles following the distribution, while the SOR algorithm is applied for stable computation during the simulation. The initial distribution is given as bump-on-tail distribution for example, which can be executed via pic_1d_bump_on_tail.py. It is available to simulate other initial distribution function by modifying dist.py. 
 </p>
-
 <div>
     <p float = 'left'>
-        <img src="/result/hamiltonian_comparsion.png"  width="50%">
+        <img src="/result/bump-on-tail_simulation_CIC_leapfrog.gif"  width="100%">
     </p>
 </div>
 
 <p> 
-    This code also simulates any initial condition which is given by any probability distribution. Rejection sampling is used to select random particles following the distribution, while the SOR algorithm is applied for stable computation during the simulation. The initial distribution is given as bump-on-tail distribution for example, which can be executed via pic_1d_bump_on_tail.py. It is available to simulate other initial distribution function by modifying dist.py. 
+    The distribution of the particles along the time in this case shows that the Landau damping process, which indicates the quasi-linear diffusion of the velocity distribution due to wave-particle interaction. 
 </p>
+
+<div>
+    <p float = 'left'>
+        <img src="/result/bump-on-tail_evolution_dist_CIC_leapfrog.png"  width="100%">
+    </p>
+</div>
 
 ## Reference
 - <a href = "https://medium.com/swlh/create-your-own-plasma-pic-simulation-with-python-39145c66578b">Create Your Own Plasma PIC Simulation, Philip Mocz</a>
