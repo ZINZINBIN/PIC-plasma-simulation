@@ -24,6 +24,7 @@ class PIC:
         vth: float = 1.0,
         vb: float = 3.0,
         A: float = 0.1,
+        n_mode:int = 5,
         method: Literal["midpoint", "leapfrog", "verlet", "implicit"] = "leapfrog",
         solver: Literal["SOR", "Gauss"] = "Gauss",
         interpol: Literal["CIC", "TSC"] = "CIC",
@@ -50,6 +51,7 @@ class PIC:
         self.A = A                  # Amplitude of the perturbation
         self.vth = vth              # Thermal velocity of electrons
         self.vb = vb                # Beam velocity 
+        self.n_mode = n_mode        # mode number of perturbation
 
         # Bump-on-tail instability
         self.init_dist = init_dist
@@ -92,7 +94,7 @@ class PIC:
             Nh = int(self.N/2)
             self.Nh = Nh
             self.v[Nh:] *= -1                                                 # anti-symmetric configuration
-            self.v *= (1 + self.A * np.sin(2 * np.pi * self.x / self.L))      # add perturbation
+            self.v *= (1 + self.A * np.sin(2 * self.n_mode * np.pi * self.x / self.L))      # add perturbation
 
         elif simcase == "bump-on-tail":
             x, v = self.init_dist.get_sample()
@@ -100,8 +102,7 @@ class PIC:
             self.v = v.reshape(-1, 1)
 
             # Initial condition
-            n = 5
-            self.v *= (1 + self.A * np.sin(2 * np.pi * n * self.x / self.L))  # add perturbation
+            self.v *= (1 + self.A * np.sin(2 * np.pi * self.n_mode * self.x / self.L))  # add perturbation
 
     def generate_grad(self):
         dx = self.L / self.N_mesh

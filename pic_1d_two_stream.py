@@ -18,6 +18,7 @@ def parsing():
     parser.add_argument("--vth", type = float, default = 1.0)
     parser.add_argument("--gamma", type = float, default = 5.0)
     parser.add_argument("--A", type = float, default = 0.1)
+    parser.add_argument("--n_mode", type=int, default=2)
     parser.add_argument("--use_animation", type = bool, default = True)
     parser.add_argument("--plot_freq", type = int, default = 10)
     parser.add_argument("--save_dir", type = str, default = "./result/")
@@ -43,6 +44,7 @@ if __name__ == "__main__":
         vth = args['vth'],
         vb = args['vb'],
         A = args['A'],
+        n_mode = args['n_mode'],
         simcase = args['simcase'],
     )
 

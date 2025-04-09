@@ -17,7 +17,7 @@ def parsing():
     parser.add_argument("--n0", type = float, default = 1.0)
     parser.add_argument("--gamma", type = float, default = 1.0)
     parser.add_argument("--A", type=float, default=0.02)
-    parser.add_argument("--eta", type=float, default=10.0)
+    parser.add_argument("--n_mode", type=int, default=5)
     parser.add_argument("--a", type=float, default=0.2)
     parser.add_argument("--v0", type=float, default=3.0)
     parser.add_argument("--sigma", type=float, default=0.5)
@@ -33,8 +33,8 @@ if __name__ == "__main__":
     args = parsing()
 
     # Initial distribution: Bump-On-Tail distribution
-    dist = BumpOnTail1D(eta = args['eta'], a = args['a'], v0 = args['v0'], sigma = args['sigma'], n_samples=args['num_particle'], L = args['L'])
-    
+    dist = BumpOnTail1D(a = args['a'], v0 = args['v0'], sigma = args['sigma'], n_samples=args['num_particle'], L = args['L'])
+
     sim = PIC(
         N=args["num_particle"],
         N_mesh=args["num_mesh"],
@@ -43,17 +43,18 @@ if __name__ == "__main__":
         interpol=args["interpol"],
         n0=args["n0"],
         L=args["L"],
-        A = args['A'],
+        A=args["A"],
+        n_mode=args["n_mode"],
         dt=args["dt"],
         tmin=args["t_min"],
         tmax=args["t_max"],
         gamma=args["gamma"],
         simcase=args["simcase"],
-        init_dist=dist
+        init_dist=dist,
     )
 
     snapshot, E, KE, PE = sim.solve()
-    
+
     h_idx = dist.high_indx
 
     # plot pic simulation figure

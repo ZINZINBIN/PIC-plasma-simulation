@@ -15,6 +15,7 @@
                                     --vb {beam velocity}
                                     --vth {thermal velocity}
                                     --A {Amplitude of perturbation}
+                                    --n_mode {mode number of perturbation}
 ```
 
 ### Bump-on-tail instability simluation
@@ -27,6 +28,8 @@
                                     --v0 {high energy electron velocity}
                                     --a {ratio of perturbation}
                                     --sigma {Deviation of distribution}
+                                    --A {Amplitude of perturbation}
+                                    --n_mode {mode number of perturbation}
 ```
 
 ## Simulation

@@ -22,7 +22,6 @@ class BasicDistribution(ABC):
 class BumpOnTail1D(BasicDistribution):
     def __init__(
         self,
-        eta: float = 10.0,
         a: float = 0.3,
         v0: float = 4.0,
         sigma: float = 0.5,
@@ -30,7 +29,6 @@ class BumpOnTail1D(BasicDistribution):
         L:float = 10,
     ):
         # parameters
-        self.eta = eta
         self.a = a
         self.v0 = v0
         self.sigma = sigma
