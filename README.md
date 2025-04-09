@@ -67,7 +67,7 @@
 </p>
 <div>
     <p float = 'left'>
-        <img src="/result/bump-on-tail_simulation_CIC_leapfrog.gif"  width="100%">
+        <img src="/result/bump-on-tail_simulation_CIC_leapfrog.gif"  width="47.5%">
     </p>
 </div>
 
@@ -77,7 +77,7 @@
 
 <div>
     <p float = 'left'>
-        <img src="/result/bump-on-tail_evolution_dist_CIC_leapfrog.png"  width="47.5%">
+        <img src="/result/bump-on-tail_evolution_dist_CIC_leapfrog.png"  width="100%">
     </p>
 </div>
 
