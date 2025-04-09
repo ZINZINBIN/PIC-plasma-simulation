@@ -7,12 +7,26 @@
 ## How to execute
 ### Two-stream instability simulation
 ```
-    python3 pic_1d_two_stream.py --num_particles {# of particles}
+    python3 pic_1d_two_stream.py    --num_particles {# of particles} 
+                                    --num_mesh {# of mesh grid}
+                                    --method {"midpoint","implicit","leapfrog","verlet"}
+                                    --solver {"Gauss", "SOR"}
+                                    --interpol {"CIC","TSC"}
+                                    --vb {beam velocity}
+                                    --vth {thermal velocity}
+                                    --A {Amplitude of perturbation}
 ```
 
 ### Bump-on-tail instability simluation
 ```
-    python3 pic_1d_bump_on_tail.py --num_particles {# of particles}
+    python3 pic_1d_bump_on_tail.py  --num_particles {# of particles} 
+                                    --num_mesh {# of mesh grid}
+                                    --method {"midpoint","implicit","leapfrog","verlet"}
+                                    --solver {"Gauss", "SOR"}
+                                    --interpol {"CIC","TSC"}
+                                    --v0 {high energy electron velocity}
+                                    --a {ratio of perturbation}
+                                    --sigma {Deviation of distribution}
 ```
 
 ## Simulation
@@ -36,6 +50,10 @@
     </p>
 </div>
 
+<p> 
+    The distribution of the particles along the time can be represented as below. The two-stream instability simulation assumed the perturbation of the velocity distribution with high drift velocity induced by two injected electron beams in the periodic system. We can see two different distribution functions at a initial time have been merged due to the interaction eventually.
+</p>
+
 <div>
     <p float = 'left'>
         <img src="/result/two-stream_evolution_dist_CIC_leapfrog.png"  width="100%">
@@ -53,7 +71,7 @@
 </div>
 
 <p> 
-    This code also simulates any initial condition which is given by any probability distribution. Rejection sampling is used to select random particles following the distribution, while the SOR algorithm is applied for stable computation during the simulation. The example below is a "Bump-on-tail" distribution with externel electric field. The analytic solution is already known, thus we compare two results from analytic solution (left) and PIC simluation (right).
+    This code also simulates any initial condition which is given by any probability distribution. Rejection sampling is used to select random particles following the distribution, while the SOR algorithm is applied for stable computation during the simulation. The initial distribution is given as bump-on-tail distribution for example, which can be executed via pic_1d_bump_on_tail.py. It is available to simulate other initial distribution function by modifying dist.py. 
 </p>
 
 ## Reference

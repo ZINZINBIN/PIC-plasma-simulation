@@ -1,5 +1,5 @@
 # job
-# *.log
-# *.err
-# *.out
+*.log
+*.err
+*.out
 *.slurm
