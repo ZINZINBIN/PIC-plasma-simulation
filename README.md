@@ -5,12 +5,13 @@
 </p>
 
 ## How to execute
+### Two-stream instability simulation
 <div>
     <p float = 'left'>
         <img src="/result/two-stream_evolution_CIC_leapfrog.png"  width="100%">
     </p>
 </div>
-### Two-stream instability simulation
+
 ```
     python3 pic_1d_two_stream.py    --num_particles {# of particles} 
                                     --num_mesh {# of mesh grid}
@@ -29,6 +30,7 @@
         <img src="/result/bump-on-tail_evolution_CIC_leapfrog.png"  width="100%">
     </p>
 </div>
+
 ```
     python3 pic_1d_bump_on_tail.py  --num_particles {# of particles} 
                                     --num_mesh {# of mesh grid}
