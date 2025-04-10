@@ -1,10 +1,15 @@
 # Electrostatic Particle-In-Cell Plasma Simulation
 ## Introduction
-<p> 
-    This is a github repository of python code for Two-stream instability based on PIC method. The baseline code referred is from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. For the faster computation in field solver, Tri-diagonal Gaussian elimiation method is utilized for 1-dimensional two-stream instability simulation. For initial condition, we applied adding beam velocity with reversion of the sign in half of electrons, then applying the sinusoidal perturabtion in overall electron velocity distribution.
+<p>     
+    This is a github repository of Particle-In-Cell (PIC) python code for 1-dimensional electrostatic plasma. The baseline code is referred from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. For the faster computation in field solver, Tri-diagonal Gaussian elimiation method is utilized for 1-dimensional two-stream instability simulation and SOR is applied for bump-on-tail instability simulation. You can adapt different mesh interpolation methods and time integration algorithms. This code provides Cloud-In-Cell (CIC), high-order spline method (TSC) for mesh interpolation, and leapfrog, verlet, midpoint method for time integration. Each simulation code can take initial sinusoidal perturbation with different modes in electron velocity distribution. The arguments for initial perturbations depends on the simulation and the detailed information can be checked from the code. 
 </p>
 
 ## How to execute
+<div>
+    <p float = 'left'>
+        <img src="/result/two-stream_evolution_CIC_leapfrog.png"  width="100%">
+    </p>
+</div>
 ### Two-stream instability simulation
 ```
     python3 pic_1d_two_stream.py    --num_particles {# of particles} 
@@ -19,6 +24,11 @@
 ```
 
 ### Bump-on-tail instability simluation
+<div>
+    <p float = 'left'>
+        <img src="/result/bump-on-tail_evolution_CIC_leapfrog.png"  width="100%">
+    </p>
+</div>
 ```
     python3 pic_1d_bump_on_tail.py  --num_particles {# of particles} 
                                     --num_mesh {# of mesh grid}

@@ -1,7 +1,7 @@
 import argparse
 from src.PIC import PIC
 from src.dist import BumpOnTail1D
-from src.util import generate_PIC_figure, generate_PIC_snapshot, generate_hamiltonian_analysis, generate_bump_on_tail_gif, generate_distribution_snapshot, generate_distribution_figure
+from src.util import generate_bump_on_tail_figure, generate_bump_on_tail_snapshot, generate_hamiltonian_analysis, generate_bump_on_tail_gif, generate_distribution_snapshot, generate_distribution_figure
 
 def parsing():
     parser = argparse.ArgumentParser(description="1D Electrostatic Particle-In-Cell code for plasma kinetic simulation")
@@ -12,7 +12,7 @@ def parsing():
     parser.add_argument("--interpol", type = str, default = "CIC", choices=["CIC", "TSC"])
     parser.add_argument("--t_min", type = float, default = 0)
     parser.add_argument("--t_max", type = float, default = 50.0)
-    parser.add_argument("--dt", type = float, default = 0.05)
+    parser.add_argument("--dt", type = float, default = 0.1)
     parser.add_argument("--L", type = float, default = 50)
     parser.add_argument("--n0", type = float, default = 1.0)
     parser.add_argument("--gamma", type = float, default = 1.0)
@@ -58,6 +58,8 @@ if __name__ == "__main__":
     h_idx = dist.high_indx
 
     # plot pic simulation figure
+    generate_bump_on_tail_snapshot(snapshot[:,-1], args['save_dir'], "{}_snapshot_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0, high_electron_indice=h_idx)
+    generate_bump_on_tail_figure(snapshot, args['save_dir'], "{}_evolution_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0, high_electron_indice=h_idx)
     generate_hamiltonian_analysis(args['t_max'], E, KE, PE, args['save_dir'], "{}_hamiltonian_{}_{}.png".format(args['simcase'], args['interpol'], args['method']))
 
     # plot distribution

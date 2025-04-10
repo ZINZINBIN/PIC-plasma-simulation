@@ -256,7 +256,7 @@ class PIC:
 
         else:
             if self.solver == "SOR":
-                x = SOR(A, B, x_ref, 1.2, 64, 1e-10)
+                x = SOR(A, B, x_ref, 1.2, 50, 1e-8)
 
             elif self.solver == "Gauss":
                 x = Gaussian_Elimination_Improved(A, B, gamma)

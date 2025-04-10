@@ -19,8 +19,8 @@ def Gaussian_Elimination_TriDiagonal(A_origin : np.ndarray, B_origin : np.ndarra
         
     # Backward Substitution 
     X[-1] = B[-1] / A[-1,-1]
-    for idx_i in [n - i - 1 for i in range(1,n)]:
-        X[idx_i] = 1 / A[idx_i, idx_i] * (B[idx_i] - A[idx_i, idx_i +1] * X[idx_i + 1])
+    for idx_i in range(n-2,-1,-1):
+        X[idx_i] = (B[idx_i] - A[idx_i, idx_i +1] * X[idx_i + 1]) / A[idx_i, idx_i]
 
     return X
 
@@ -46,47 +46,51 @@ def Gaussian_Elimination_Improved(A: np.ndarray, B: np.ndarray, gamma:float = 5.
     x = x1 - q * np.dot(v.reshape(1,-1),x1.reshape(-1,1)) / (1 + np.dot(v.reshape(1,-1),q.reshape(-1,1)))
     return x
 
+@jit(nopython=True)
 def SOR(A:np.ndarray, B:np.ndarray, x_origin:np.ndarray, w = 1.0, n_epoch:int = 1, eps:float = 1e-8):
+
+    N = len(A)
+    A_diag = np.array([A[i,i] for i in range(N)])
     
-    A_diag = A.diagonal()
-    D = np.diag(A_diag)
+    D = np.zeros((N, N))
+    
+    for i in range(N):
+        D[i, i] = A_diag[i]
+        
     p = A - D
     L, U = np.zeros_like(p), np.zeros_like(p)
 
-    rows = D.shape[0]
-    cols = D.shape[1]
-
-    for row in range(0, rows):
-        for col in range(0, cols):
+    for row in range(0, N):
+        for col in range(0, N):
             if row > col:
                 L[row, col] = p[row, col]
             elif row < col:
                 U[row, col] = p[row, col]
             else:
                 pass
-    
+
     # SOR alogorithm
     xi = np.copy(x_origin)
     xf = np.copy(x_origin)
-    
+
     def _update(xl:np.ndarray, xr:np.ndarray):
         for idx in range(0, xr.shape[0]):
             xr[idx] = (1-w) * xl[idx] + w / (A_diag[idx] + 1e-16 * np.sign(A_diag[idx])) * (B[idx] - L[idx, :]@xr - U[idx, :]@xl)
         return xl,xr
-    
+
     def _compute_relative_error(x:np.ndarray):
         err = np.sum(np.abs(A@x-B)) / len(B)
         return err
-    
+
     for _ in range(n_epoch):
-        
+
         _, xf = _update(xi,xf)
-        
+
         err = _compute_relative_error(xf)
-        
+
         if err < eps:
             break
 
         xi = np.copy(xf)
-            
+
     return xf

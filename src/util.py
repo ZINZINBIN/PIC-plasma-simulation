@@ -3,6 +3,7 @@ from typing import Union, Optional
 import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from scipy.stats import gaussian_kde
 
 def compute_hamiltonian(v: np.array, E_mesh: np.array, dx: float, return_all:bool = False):
     KE = 0.5 * np.sum(v * v)
@@ -201,6 +202,122 @@ def generate_PIC_gif(
     ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
     plt.close(fig)
     
+# plot bump-on-tail simulation
+def generate_bump_on_tail_snapshot(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+    high_electron_indice:Optional[np.ndarray] = None,
+):
+    # check directory
+    if save_dir is not None:
+
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        filepath = os.path.join(save_dir, filename)
+    else:
+        filepath = None
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    
+    if high_electron_indice is not None:
+        low_electron_indice = np.array([i for i in range(0,N) if i not in high_electron_indice])
+    else:
+        low_electron_indice = np.arange(0,N)
+        
+    fig, ax = plt.subplots(1, 1, figsize=(5, 4), facecolor="white", dpi=120)
+
+    ax.cla()
+    ax.scatter(snapshot[low_electron_indice], snapshot[low_electron_indice+N], s=0.4, color="blue", alpha=0.5)
+    
+    if high_electron_indice is not None:
+        ax.scatter(snapshot[high_electron_indice], snapshot[high_electron_indice+N], s=0.4, color="red", alpha=0.5)
+        
+    ax.set_xlabel("x")
+    ax.set_ylabel("v")
+    ax.axis([xmin, xmax, vmin, vmax])
+    ax.set_title("PIC simulation")
+
+    fig.tight_layout()
+
+    if filepath is not None:
+        plt.savefig(filepath, dpi=120)
+
+    return fig, ax
+
+def generate_bump_on_tail_figure(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+    high_electron_indice:Optional[np.ndarray] = None,
+):
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    Nt = snapshot.shape[1]
+    
+    if high_electron_indice is not None:
+        low_electron_indice = np.array([i for i in range(0,N) if i not in high_electron_indice])
+    else:
+        low_electron_indice = np.arange(0,N)
+
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4), facecolor="white", dpi=120)
+    axes = axes.ravel()
+
+    axes[0].cla()
+    axes[0].scatter(snapshot[low_electron_indice,0], snapshot[low_electron_indice+N,0], s=0.4, color="blue", alpha=0.5)
+    
+    if high_electron_indice is not None:
+        axes[0].scatter(snapshot[high_electron_indice,0], snapshot[high_electron_indice+N,0], s=0.4, color="red", alpha=0.5)
+      
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("v")
+    axes[0].axis([xmin, xmax, vmin, vmax])
+    axes[0].set_title("PIC simulation at $t=0$")
+
+    axes[1].cla()
+    axes[1].scatter(snapshot[low_electron_indice,Nt//2], snapshot[low_electron_indice+N,Nt//2], s=0.4, color="blue", alpha=0.5)
+    
+    if high_electron_indice is not None:
+        axes[1].scatter(snapshot[high_electron_indice,Nt//2], snapshot[high_electron_indice+N,Nt//2], s=0.4, color="red", alpha=0.5)
+      
+    axes[1].set_xlabel("x")
+    axes[1].set_ylabel("v")
+    axes[1].axis([xmin, xmax, vmin, vmax])
+    axes[1].set_title("PIC simulation at $t=t_{max}/2$")
+
+    axes[2].cla()
+    axes[2].scatter(snapshot[low_electron_indice,-1], snapshot[low_electron_indice+N,-1], s=0.4, color="blue", alpha=0.5)
+    
+    if high_electron_indice is not None:
+        axes[2].scatter(snapshot[high_electron_indice,-1], snapshot[high_electron_indice+N,-1], s=0.4, color="red", alpha=0.5)
+      
+    axes[2].set_xlabel("x")
+    axes[2].set_ylabel("v")
+    axes[2].axis([xmin, xmax, vmin, vmax])
+    axes[2].set_title("PIC simulation at $t=t_{max}$")
+
+    fig.tight_layout()
+    plt.savefig(filepath, dpi=120)
+
+    return fig, axes
+
+    
 def generate_bump_on_tail_gif(
     snapshot:np.ndarray,
     save_dir:Optional[str],
@@ -244,6 +361,7 @@ def generate_bump_on_tail_gif(
         
         if high_electron_indice is not None:
             scatter_r.set_offsets(np.column_stack((snapshot[high_electron_indice, idx], snapshot[high_electron_indice + N, idx])))
+        
         fig.tight_layout()
         return scatter_b, scatter_r
 
