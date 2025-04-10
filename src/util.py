@@ -286,16 +286,16 @@ def generate_distribution_snapshot(
     axes[0].cla()
     axes[0].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
     axes[0].set_xlabel("x")
-    axes[0].set_ylabel("Distribution f(x)")
+    axes[0].set_ylabel("f(x)")
     axes[0].set_xlim([xmin, xmax])
-    axes[0].set_ylim([0,1])
+    axes[0].set_ylim([0,0.1])
 
     axes[1].cla()
     axes[1].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
     axes[1].set_xlabel("v")
-    axes[1].set_ylabel("Distribution f(v)")
+    axes[1].set_ylabel("f(v)")
     axes[1].set_xlim([vmin, vmax])
-    axes[1].set_ylim([0,1])
+    axes[1].set_ylim([0,0.5])
 
     fig.tight_layout()
 
@@ -321,10 +321,9 @@ def generate_distribution_figure(
 
     # Snapshot info
     N = snapshot.shape[0] // 2
-    Nh = N // 2
     Nt = snapshot.shape[1]
 
-    fig, axes = plt.subplots(2, 3, figsize=(12, 8), facecolor="white", dpi=120)
+    fig, axes = plt.subplots(2, 3, figsize=(9, 6), facecolor="white", dpi=120)
 
     x = snapshot[: len(snapshot) // 2, 0]
     v = snapshot[len(snapshot) // 2 :, 0]
@@ -335,16 +334,16 @@ def generate_distribution_figure(
     axes[0,0].cla()
     axes[0,0].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
     axes[0,0].set_xlabel("x")
-    axes[0,0].set_ylabel("Distribution f(x) at $t=0$")
+    axes[0,0].set_ylabel("f(x) at $t=0$")
     axes[0,0].set_xlim([xmin, xmax])
-    axes[0,0].set_ylim([0, 1])
+    axes[0,0].set_ylim([0, 0.1])
     
     axes[1,0].cla()
     axes[1,0].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
     axes[1,0].set_xlabel("v")
-    axes[1,0].set_ylabel("Distribution f(v) at $t=0$")
+    axes[1,0].set_ylabel("f(v) at $t=0$")
     axes[1,0].set_xlim([vmin, vmax])
-    axes[1,0].set_ylim([0, 1])
+    axes[1,0].set_ylim([0, 0.5])
     
     x = snapshot[: len(snapshot) // 2, Nt//2]
     v = snapshot[len(snapshot) // 2 :, Nt//2]
@@ -355,16 +354,16 @@ def generate_distribution_figure(
     axes[0,1].cla()
     axes[0,1].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
     axes[0,1].set_xlabel("x")
-    axes[0,1].set_ylabel("Distribution f(x) at $t=t_{max}/2$")
+    axes[0,1].set_ylabel("f(x) at $t=t_{max}/2$")
     axes[0,1].set_xlim([xmin, xmax])
-    axes[0,1].set_ylim([0, 1])
+    axes[0,1].set_ylim([0, 0.1])
     
     axes[1,1].cla()
     axes[1,1].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
     axes[1,1].set_xlabel("v")
-    axes[1,1].set_ylabel("Distribution f(v) at $t=t_{max}/2$")
+    axes[1,1].set_ylabel("f(v) at $t=t_{max}/2$")
     axes[1,1].set_xlim([vmin, vmax])
-    axes[1,1].set_ylim([0, 1])
+    axes[1,1].set_ylim([0, 0.5])
 
     x = snapshot[: len(snapshot) // 2, -1]
     v = snapshot[len(snapshot) // 2 :, -1]
@@ -375,16 +374,16 @@ def generate_distribution_figure(
     axes[0,2].cla()
     axes[0,2].bar(fx_bin_edge[:-1], fx, width=np.diff(fx_bin_edge), align="edge")
     axes[0,2].set_xlabel("x")
-    axes[0,2].set_ylabel("Distribution f(x) at $t=t_{max}$")
+    axes[0,2].set_ylabel("f(x) at $t=t_{max}$")
     axes[0,2].set_xlim([xmin, xmax])
-    axes[0,2].set_ylim([0, 1])
+    axes[0,2].set_ylim([0, 0.1])
     
     axes[1,2].cla()
     axes[1,2].bar(fv_bin_edge[:-1], fv, width=np.diff(fv_bin_edge), align="edge")
     axes[1,2].set_xlabel("v")
-    axes[1,2].set_ylabel("Distribution f(v) at $t=t_{max}$")
+    axes[1,2].set_ylabel("f(v) at $t=t_{max}$")
     axes[1,2].set_xlim([vmin, vmax])
-    axes[1,2].set_ylim([0, 1])
+    axes[1,2].set_ylim([0, 0.5])
 
     fig.tight_layout()
     plt.savefig(filepath, dpi=120)
