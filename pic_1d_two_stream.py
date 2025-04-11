@@ -1,6 +1,14 @@
 import argparse, os
 from src.PIC import PIC
-from src.util import generate_PIC_figure, generate_PIC_snapshot, generate_hamiltonian_analysis, generate_PIC_gif, generate_distribution_snapshot, generate_distribution_figure
+from src.util import (
+    generate_PIC_figure, 
+    generate_PIC_snapshot, 
+    generate_hamiltonian_analysis, 
+    generate_PIC_gif, 
+    generate_distribution_snapshot, 
+    generate_distribution_figure, 
+    generate_PIC_dist_gif
+)
 
 def parsing():
     parser = argparse.ArgumentParser(description="1D Electrostatic Particle-In-Cell code for plasma kinetic simulation")
@@ -65,3 +73,4 @@ if __name__ == "__main__":
 
     if args['use_animation']:
         generate_PIC_gif(snapshot, args['save_dir'], "{}_simulation_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'])
+        generate_PIC_dist_gif(snapshot, args['save_dir'], "{}_simulation_dist_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'])

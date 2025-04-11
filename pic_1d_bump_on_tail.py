@@ -1,7 +1,15 @@
 import argparse
 from src.PIC import PIC
 from src.dist import BumpOnTail1D
-from src.util import generate_bump_on_tail_figure, generate_bump_on_tail_snapshot, generate_hamiltonian_analysis, generate_bump_on_tail_gif, generate_distribution_snapshot, generate_distribution_figure
+from src.util import (
+    generate_bump_on_tail_figure, 
+    generate_bump_on_tail_snapshot, 
+    generate_hamiltonian_analysis, 
+    generate_bump_on_tail_gif, 
+    generate_bump_on_tail_dist_gif,
+    generate_distribution_snapshot, 
+    generate_distribution_figure
+)
 
 def parsing():
     parser = argparse.ArgumentParser(description="1D Electrostatic Particle-In-Cell code for plasma kinetic simulation")
@@ -68,3 +76,4 @@ if __name__ == "__main__":
 
     if args['use_animation']:
         generate_bump_on_tail_gif(snapshot, args['save_dir'], "{}_simulation_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'], h_idx)
+        generate_bump_on_tail_dist_gif(snapshot, args['save_dir'], "{}_simulation_dist_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'], h_idx)

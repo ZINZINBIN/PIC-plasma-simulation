@@ -29,8 +29,7 @@ Each simulation code can take initial sinusoidal perturbation with different mod
 </p>
 <div>
     <p float = 'left'>
-        <img src="/result/two-stream_simulation_TSC_leapfrog.gif"  width="47.5%">
-        <img src="/result/two-stream_simulation_TSC_midpoint.gif"  width="47.5%">
+        <img src="/result/two-stream_simulation_dist_CIC_leapfrog.gif"  width="100%">
     </p>
 </div>
 <p> 
@@ -51,6 +50,11 @@ Each simulation code can take initial sinusoidal perturbation with different mod
 </div>
 
 ### Bump-on-tail instability
+<div>
+    <p float = 'left'>
+        <img src="/result/bump-on-tail_simulation_dist_CIC_leapfrog.gif"  width="100%">
+    </p>
+</div>
 <p>
     The bump-on-tail instability is an example of wave growth and is one of the most fundamental and basic instabilities in plasma physics. Two-stream instability mentioned above is also one of the limiting cases of the bump-on-tail instability. The particle-wave interaction with energy transferred, also called Landau damping, can be observed by PIC simulation.
 </p>
@@ -62,11 +66,6 @@ Each simulation code can take initial sinusoidal perturbation with different mod
 <p> 
     This code can simulate any given initial distributions. Rejection sampling is utilized to estimate the follwoing distribution when samples the particles' position and velocity. For stable computation, SOR algorithm is applied with JIT compiler. In this simulation, the initial distirbution is given as the sumation of Maxwellian distribution of thermal electrons and high energy electrons. The code can be exectued through pic_1d_bump_on_tail.py. It is available to simulate other initial distribution function by modifying dist.py. 
 </p>
-<div>
-    <p float = 'left'>
-        <img src="/result/bump-on-tail_simulation_CIC_leapfrog.gif"  width="47.5%">
-    </p>
-</div>
 <p> 
     The distribution of the particles along the time in this case shows that the Landau damping process, which indicates the quasi-linear diffusion of the velocity distribution due to wave-particle interaction. 
 </p>

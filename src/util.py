@@ -156,6 +156,58 @@ def generate_PIC_figure(
 
     return fig, axes
 
+def generate_PIC_figure(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+):
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    Nh = N // 2
+    Nt = snapshot.shape[1]
+
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4), facecolor="white", dpi=120)
+    axes = axes.ravel()
+
+    axes[0].cla()
+    axes[0].scatter(snapshot[0:Nh,0], snapshot[N:N+Nh,0], s=0.4, color="blue", alpha=0.5)
+    axes[0].scatter(snapshot[Nh:N,0], snapshot[N+Nh:,0], s=0.4, color="red", alpha=0.5)
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("v")
+    axes[0].axis([xmin, xmax, vmin, vmax])
+    axes[0].set_title("PIC simulation at $t=0$")
+
+    axes[1].cla()
+    axes[1].scatter(snapshot[0:Nh,Nt//2], snapshot[N:N+Nh,Nt//2], s=0.4, color="blue", alpha=0.5)
+    axes[1].scatter(snapshot[Nh:N,Nt//2], snapshot[N+Nh:,Nt//2], s=0.4, color="red", alpha=0.5)
+    axes[1].set_xlabel("x")
+    axes[1].set_ylabel("v")
+    axes[1].axis([xmin, xmax, vmin, vmax])
+    axes[1].set_title("PIC simulation at $t=t_{max}/2$")
+
+    axes[2].cla()
+    axes[2].scatter(snapshot[0:Nh,-1], snapshot[N:N+Nh,-1], s=0.4, color="blue", alpha=0.5)
+    axes[2].scatter(snapshot[Nh:N,-1], snapshot[N+Nh:,-1], s=0.4, color="red", alpha=0.5)
+    axes[2].set_xlabel("x")
+    axes[2].set_ylabel("v")
+    axes[2].axis([xmin, xmax, vmin, vmax])
+    axes[2].set_title("PIC simulation at $t=t_{max}$")
+
+    fig.tight_layout()
+    plt.savefig(filepath, dpi=120)
+
+    return fig, axes
+
 def generate_PIC_gif(
     snapshot:np.ndarray,
     save_dir:Optional[str],
@@ -201,7 +253,68 @@ def generate_PIC_gif(
     # Save animation
     ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
     plt.close(fig)
-    
+
+def generate_PIC_dist_gif(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+    plot_freq:int = 32,
+    ):
+
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+    os.makedirs(save_dir, exist_ok=True)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), facecolor="white", dpi=120)
+    axes = axes.ravel()
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    Nh = N // 2
+    Nt = snapshot.shape[1]
+
+    axes[0].cla()
+    scatter_b = axes[0].scatter([], [], s=0.4, color="blue", alpha=0.5)
+    scatter_r = axes[0].scatter([], [], s=0.4, color="red", alpha=0.5)
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("v")
+    axes[0].set_xlim(xmin, xmax)
+    axes[0].set_ylim(vmin, vmax)
+    axes[0].set_title("PIC simulation")
+
+    v = np.linspace(vmin, vmax, 64)
+    density = gaussian_kde(snapshot[N:, 0])
+    density_plot = axes[1].plot(v, density(v), 'b')[0]
+    axes[1].set_xlabel("v")
+    axes[1].set_ylabel("f(v)")
+    axes[1].set_xlim(vmin, vmax)
+    axes[1].set_ylim([0, 0.5])
+    axes[1].set_title("Distribution f(v)")
+
+    fig.tight_layout()
+
+    def _update(idx):
+        scatter_b.set_offsets(np.column_stack((snapshot[0:Nh, idx], snapshot[N:N+Nh, idx])))
+        scatter_r.set_offsets(np.column_stack((snapshot[Nh:N, idx], snapshot[N+Nh:, idx])))
+
+        density = gaussian_kde(snapshot[N:, idx])
+        density_plot.set_xdata(v)
+        density_plot.set_ydata(density(v))
+        fig.tight_layout()
+
+        return scatter_b, scatter_r
+
+    # Create animation
+    ani = animation.FuncAnimation(fig, _update, frames=Nt, interval = 1000// plot_freq, blit=True)
+
+    # Save animation
+    ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
+    plt.close(fig)
+
 # plot bump-on-tail simulation
 def generate_bump_on_tail_snapshot(
     snapshot:np.ndarray,
@@ -317,7 +430,7 @@ def generate_bump_on_tail_figure(
 
     return fig, axes
 
-    
+
 def generate_bump_on_tail_gif(
     snapshot:np.ndarray,
     save_dir:Optional[str],
@@ -363,6 +476,78 @@ def generate_bump_on_tail_gif(
             scatter_r.set_offsets(np.column_stack((snapshot[high_electron_indice, idx], snapshot[high_electron_indice + N, idx])))
         
         fig.tight_layout()
+        return scatter_b, scatter_r
+
+    # Create animation
+    ani = animation.FuncAnimation(fig, _update, frames=Nt, interval = 1000// plot_freq, blit=True)
+
+    # Save animation
+    ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
+    plt.close(fig)
+    
+def generate_bump_on_tail_dist_gif(
+    snapshot:np.ndarray,
+    save_dir:Optional[str],
+    filename:Optional[str],
+    xmin:Optional[float] = 0.0,
+    xmax:Optional[float] = 50.0,
+    vmin:Optional[float] = -10.0,
+    vmax:Optional[float] = 10.0,
+    plot_freq:int = 32,
+    high_electron_indice:Optional[np.ndarray] = None,
+):
+
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+    os.makedirs(save_dir, exist_ok=True)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), facecolor="white", dpi=120)
+    axes = axes.ravel()
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    Nh = N // 2
+    Nt = snapshot.shape[1]
+    
+    N = snapshot.shape[0]//2
+    Nt = snapshot.shape[1]
+    
+    if high_electron_indice is not None:
+        low_electron_indice = np.array([i for i in range(0,N) if i not in high_electron_indice])
+    else:
+        low_electron_indice = np.arange(0,N)
+    
+    axes[0].cla()
+    scatter_b = axes[0].scatter([], [], s=0.4, color="blue", alpha=0.5)
+    scatter_r = axes[0].scatter([], [], s=0.4, color="red", alpha=0.5)
+    axes[0].set_xlabel("x")
+    axes[0].set_ylabel("v")
+    axes[0].set_xlim(xmin, xmax)
+    axes[0].set_ylim(vmin, vmax)
+    axes[0].set_title("PIC simulation")
+
+    v = np.linspace(vmin, vmax, 64)
+    density = gaussian_kde(snapshot[N:, 0])
+    density_plot = axes[1].plot(v, density(v), 'b')[0]
+    axes[1].set_xlabel("v")
+    axes[1].set_ylabel("f(v)")
+    axes[1].set_xlim(vmin, vmax)
+    axes[1].set_ylim([0, 0.5])
+    axes[1].set_title("Distribution f(v)")
+
+    fig.tight_layout()
+
+    def _update(idx):
+        scatter_b.set_offsets(np.column_stack((snapshot[low_electron_indice, idx], snapshot[low_electron_indice + N, idx])))
+        
+        if high_electron_indice is not None:
+            scatter_r.set_offsets(np.column_stack((snapshot[high_electron_indice, idx], snapshot[high_electron_indice + N, idx])))
+        
+        density = gaussian_kde(snapshot[N:, idx])
+        density_plot.set_xdata(v)
+        density_plot.set_ydata(density(v))
+        fig.tight_layout()
+
         return scatter_b, scatter_r
 
     # Create animation
