@@ -3,6 +3,13 @@
 
 This is a github repository of Particle-In-Cell (PIC) python code for 1-dimensional electrostatic plasma. The baseline code is referred from Philip Mocz. See the <a href = "https://github.com/pmocz/pic-python">github link</a> for original code of Philip Mocz. This code covers not only the two-stream instability case but also the more general case called bump-on-tail instability with different numerical integration methods. 
 
+<div>
+    <p float = 'left'>
+        <img src="/result/two-stream_simulation_CIC_leapfrog.gif"  width="48.5%">
+        <img src="/result/bump_on_tail_simulation_CIC_leapfrog.gif"  width="48.5%">
+    </p>
+</div>
+
 ### Algorithms for field solver
 For the faster computation, two different numerical algorithms are used.
 - Tridiagonal Gaussian elimination method for two-stream instability simulation

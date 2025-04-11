@@ -30,7 +30,7 @@ def parsing():
     parser.add_argument("--v0", type=float, default=3.0)
     parser.add_argument("--sigma", type=float, default=0.5)
     parser.add_argument("--use_animation", type = bool, default = True)
-    parser.add_argument("--plot_freq", type = int, default = 25)
+    parser.add_argument("--plot_freq", type = int, default = 40)
     parser.add_argument("--save_dir", type = str, default = "./result/")
     parser.add_argument("--simcase", type=str, default="bump-on-tail", choices = ["two-stream", "bump-on-tail"])
     args = vars(parser.parse_args())
