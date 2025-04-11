@@ -6,7 +6,7 @@ This is a github repository of Particle-In-Cell (PIC) python code for 1-dimensio
 <div>
     <p float = 'left'>
         <img src="/result/two-stream_simulation_CIC_leapfrog.gif"  width="48.5%">
-        <img src="/result/bump_on_tail_simulation_CIC_leapfrog.gif"  width="48.5%">
+        <img src="/result/bump-on-tail_simulation_CIC_leapfrog.gif"  width="48.5%">
     </p>
 </div>
 
