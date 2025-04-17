@@ -8,6 +8,14 @@ from scipy.stats import gaussian_kde
 def compute_hamiltonian(v: np.array, E_mesh: np.array, dx: float, return_all:bool = False):
     KE = 0.5 * np.sum(v * v)
     PE = 0.5 * np.sum(E_mesh * E_mesh) * dx
+    
+    # Scale calibration
+    N = len(v)
+    N_mesh = len(E_mesh)
+    L = dx * N_mesh
+    f = (N / L)
+    PE *= f
+    
     H = KE + PE
     
     if return_all:
@@ -52,7 +60,7 @@ def generate_hamiltonian_analysis(
     ax2 = ax.twinx()
     ax2.plot(tlins, PE, "k-", label="$E_{potential}$")
 
-    ax.set_title("E(t)")
+    ax.set_title("Energy over time")
     
     lines, labels = ax.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()

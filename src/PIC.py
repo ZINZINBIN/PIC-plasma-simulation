@@ -2,8 +2,8 @@ import numpy as np
 import scipy as sp
 from tqdm.auto import tqdm
 from typing import Literal, Optional
-from src.util import compute_hamiltonian, compute_distribution
-from src.solve import Gaussian_Elimination_Improved, Gaussian_Elimination_TriDiagonal, SOR
+from src.util import compute_hamiltonian
+from src.solve import Gaussian_Elimination_Improved, SOR
 from src.integration import explicit_midpoint, leapfrog, verlet, implicit_midpoint
 from src.interpolate import CIC, TSC
 from src.dist import BasicDistribution
@@ -103,6 +103,10 @@ class PIC:
 
             # Initial condition
             self.v *= (1 + self.A * np.sin(2 * np.pi * self.n_mode * self.x / self.L))  # add perturbation
+            
+        # check CFL condition for stability
+        if self.dt > 2 / np.sqrt(self.N / self.L):
+            self.dt = 2 / np.sqrt(self.N / self.L)
 
     def generate_grad(self):
         dx = self.L / self.N_mesh
@@ -298,9 +302,9 @@ class PIC:
             E_list.append(E)
             KE_list.append(KE)
             PE_list.append(PE)
-
+            
         print("# Simputation process end")
-
+        
         qs = np.concatenate(pos_list, axis = 1)
         ps = np.concatenate(vel_list, axis = 1)
         snapshot = np.concatenate([qs, ps], axis=0)
@@ -308,5 +312,5 @@ class PIC:
         E = np.array(E_list)
         KE = np.array(KE_list)
         PE = np.array(PE_list)
-
+        
         return snapshot, E, KE, PE
