@@ -1,13 +1,31 @@
 import numpy as np
-from typing import Union
+from typing import Union, Optional
 from numba import jit
 
-@jit(nopython=True)
-def Gaussian_Elimination_TriDiagonal(A_origin : np.ndarray, B_origin : np.ndarray):
-    A = np.copy(A_origin)
-    B = np.copy(B_origin).reshape(-1)
+def Jacobi(A:np.ndarray, B:np.ndarray, x0:Optional[np.ndarray] = None, w:float=2/3, n_epoch:int = 16, eps:float = 1e-8):
+    N = A.shape[0]
+    x = np.zeros(N, dtype = float) if x0 is None else x0.copy().reshape(-1) 
     
-    m,n = A.shape[0], A.shape[1]
+    D = A.diagonal()
+
+    for k in range(n_epoch):
+        
+        res = B - A@x
+        x_new = x + w * res / D
+        
+        if np.linalg.norm(res) / N < eps:
+            break
+        
+        x = x_new
+
+    return x_new
+
+@jit(nopython=True)
+def Gaussian_Elimination_TriDiagonal(A_origin:np.ndarray, B_origin:np.ndarray):
+    A = A_origin.copy()
+    B = B_origin.copy().reshape(-1)
+    
+    n = A.shape[0]
             
     X = np.zeros_like(B)
     
@@ -26,24 +44,30 @@ def Gaussian_Elimination_TriDiagonal(A_origin : np.ndarray, B_origin : np.ndarra
 
 @jit(nopython=True)
 def Gaussian_Elimination_Improved(A: np.ndarray, B: np.ndarray, gamma:float = 5.0):
-    A_new = np.copy(A)
+    
+    N = A.shape[0]
+
+    if A.shape[0] != A.shape[1] or B.shape[0] != N:
+        raise ValueError("Matrix A must be square and B must have compatible dimensions.")
+
+    A_new = A.copy()
     A_new[0,0] -= gamma
     A_new[-1,-1] -= A[0,-1] * A[-1,0] / gamma
-    A_new[-1,0] = 0
-    A_new[0,-1] = 0
+    A_new[-1,0] = 0.0
+    A_new[0,-1] = 0.0
 
-    u = np.zeros((A.shape[1],1))
-    u[0,0] = gamma
-    u[-1,0] = A[-1,0]
+    u = np.zeros(N, dtype = float)
+    u[0] = gamma
+    u[-1] = A[-1,0]
 
-    v = np.zeros((A.shape[1],1))
-    v[0,0] = 1
-    v[-1,0] = A[0,-1] / gamma
+    v = np.zeros(N, dtype = float)
+    v[0] = 1
+    v[-1] = A[0,-1] / gamma
 
-    x1 = Gaussian_Elimination_TriDiagonal(A_new, B)
+    x = Gaussian_Elimination_TriDiagonal(A_new, B)
     q = Gaussian_Elimination_TriDiagonal(A_new, u)
-
-    x = x1 - q * np.dot(v.reshape(1,-1),x1.reshape(-1,1)) / (1 + np.dot(v.reshape(1,-1),q.reshape(-1,1)))
+    
+    x -= q * np.dot(v,x) / (1 + np.dot(v,q))
     return x
 
 @jit(nopython=True)

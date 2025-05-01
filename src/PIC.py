@@ -3,7 +3,7 @@ import scipy as sp
 from tqdm.auto import tqdm
 from typing import Literal, Optional
 from src.util import compute_hamiltonian
-from src.solve import Gaussian_Elimination_Improved, SOR
+from src.solve import Gaussian_Elimination_Improved, SOR, Jacobi
 from src.integration import explicit_midpoint, leapfrog, verlet, implicit_midpoint
 from src.interpolate import CIC, TSC
 from src.dist import BasicDistribution
@@ -103,7 +103,7 @@ class PIC:
 
             # Initial condition
             self.v *= (1 + self.A * np.sin(2 * np.pi * self.n_mode * self.x / self.L))  # add perturbation
-            
+
         # check CFL condition for stability
         if self.dt > 2 / np.sqrt(self.N / self.L):
             self.dt = 2 / np.sqrt(self.N / self.L)
@@ -197,6 +197,7 @@ class PIC:
             n, w_l, w_m, w_r, idx_l, idx_m, idx_r = self.compute_density(x,dx,N,N_mesh,n0,L,True)
 
         phi_mesh = self.linear_solve(self.laplacian, n - n0, self.phi_mesh, self.gamma).reshape(-1,1)
+
         E_mesh = (-1) * np.matmul(self.grad, phi_mesh)
 
         if self.interpol == "CIC":
@@ -257,10 +258,11 @@ class PIC:
 
         if x_ref is None and self.solver == "SOR":
             x = sp.linalg.solve(A, B, assume_a="gen")
-
+            
         else:
             if self.solver == "SOR":
-                x = SOR(A, B, x_ref, 1.2, 50, 1e-8)
+                x = Jacobi(A, B, x_ref, w=2/3, n_epoch=128, eps=1e-10)
+                # x = SOR(A, B, x_ref, 2/3, 128, 1e-8)
 
             elif self.solver == "Gauss":
                 x = Gaussian_Elimination_Improved(A, B, gamma)
@@ -302,9 +304,9 @@ class PIC:
             E_list.append(E)
             KE_list.append(KE)
             PE_list.append(PE)
-            
+
         print("# Simputation process end")
-        
+
         qs = np.concatenate(pos_list, axis = 1)
         ps = np.concatenate(vel_list, axis = 1)
         snapshot = np.concatenate([qs, ps], axis=0)
@@ -312,5 +314,5 @@ class PIC:
         E = np.array(E_list)
         KE = np.array(KE_list)
         PE = np.array(PE_list)
-        
+
         return snapshot, E, KE, PE
