@@ -2,13 +2,14 @@ import argparse
 from src.PIC import PIC
 from src.dist import BumpOnTail1D
 from src.util import (
-    generate_bump_on_tail_figure, 
-    generate_bump_on_tail_snapshot, 
-    generate_hamiltonian_analysis, 
-    generate_bump_on_tail_gif, 
+    generate_bump_on_tail_figure,
+    generate_bump_on_tail_snapshot,
+    generate_hamiltonian_analysis,
+    generate_bump_on_tail_gif,
     generate_bump_on_tail_dist_gif,
-    generate_distribution_snapshot, 
-    generate_distribution_figure
+    generate_distribution_snapshot,
+    generate_distribution_figure,
+    generate_v_distribution_figure,
 )
 
 def parsing():
@@ -73,7 +74,8 @@ if __name__ == "__main__":
     # plot distribution
     generate_distribution_snapshot(snapshot[:,-1], args["save_dir"],"{}_snapshot_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
     generate_distribution_figure(snapshot, args["save_dir"],"{}_evolution_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
-
+    generate_v_distribution_figure(snapshot, args["save_dir"],"{}_evolution_v_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), vmin = -10.0, vmax = 10.0)
+    
     if args['use_animation']:
         generate_bump_on_tail_gif(snapshot, args['save_dir'], "{}_simulation_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'], h_idx)
         generate_bump_on_tail_dist_gif(snapshot, args['save_dir'], "{}_simulation_dist_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'], h_idx)

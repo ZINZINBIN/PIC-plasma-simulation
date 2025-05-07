@@ -492,7 +492,7 @@ def generate_bump_on_tail_gif(
     # Save animation
     ani.save(filepath, writer=animation.PillowWriter(fps=plot_freq))
     plt.close(fig)
-    
+
 def generate_bump_on_tail_dist_gif(
     snapshot:np.ndarray,
     save_dir:Optional[str],
@@ -695,6 +695,69 @@ def generate_distribution_figure(
     axes[1,2].set_ylabel("f(v) at $t=t_{max}$")
     axes[1,2].set_xlim([vmin, vmax])
     axes[1,2].set_ylim([0, 0.5])
+
+    fig.tight_layout()
+    plt.savefig(filepath, dpi=120)
+
+    return fig, axes
+
+def generate_v_distribution_figure(
+    snapshot: np.ndarray,
+    save_dir: Optional[str],
+    filename: Optional[str],
+    vmin: Optional[float] = -10.0,
+    vmax: Optional[float] = 10.0,
+):
+
+    v_axis = np.linspace(vmin, vmax, 64)
+
+    # check directory
+    filepath = os.path.join(save_dir, filename)
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # Snapshot info
+    N = snapshot.shape[0] // 2
+    Nt = snapshot.shape[1]
+
+    fig, axes = plt.subplots(1, 3, figsize=(12, 4), facecolor="white", dpi=120)
+
+    x = snapshot[: len(snapshot) // 2, 0]
+    v = snapshot[len(snapshot) // 2 :, 0]
+
+    density = gaussian_kde(v)
+
+    axes[0].plot(v_axis, density(v_axis), "b")[0]
+    axes[0].set_xlabel("v")
+    axes[0].set_ylabel("f(v)")
+    axes[0].set_xlim(vmin, vmax)
+    axes[0].set_ylim([0, 0.5])
+    axes[0].set_title("Distribution f(v,$t=0$)")
+
+    x = snapshot[: len(snapshot) // 2, Nt//2]
+    v = snapshot[len(snapshot) // 2 :, Nt//2]
+
+    density = gaussian_kde(v)
+
+    axes[1].plot(v_axis, density(v_axis), "b")[0]
+    axes[1].set_xlabel("v")
+    axes[1].set_ylabel("f(v)")
+    axes[1].set_xlim(vmin, vmax)
+    axes[1].set_ylim([0, 0.5])
+    axes[1].set_title("Distribution f(v,$t=t_{max}/2$)")
+
+    x = snapshot[: len(snapshot) // 2, -1]
+    v = snapshot[len(snapshot) // 2 :, -1]
+
+    density = gaussian_kde(v)
+
+    axes[2].plot(v_axis, density(v_axis), "b")[0]
+    axes[2].set_xlabel("v")
+    axes[2].set_ylabel("f(v)")
+    axes[2].set_xlim(vmin, vmax)
+    axes[2].set_ylim([0, 0.5])
+    axes[2].set_title("Distribution f(v,$t=t_{max}$)")
 
     fig.tight_layout()
     plt.savefig(filepath, dpi=120)

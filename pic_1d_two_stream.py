@@ -7,7 +7,8 @@ from src.util import (
     generate_PIC_gif, 
     generate_distribution_snapshot, 
     generate_distribution_figure, 
-    generate_PIC_dist_gif
+    generate_PIC_dist_gif,
+    generate_v_distribution_figure
 )
 
 def parsing():
@@ -26,7 +27,7 @@ def parsing():
     parser.add_argument("--vth", type = float, default = 1.0)
     parser.add_argument("--gamma", type = float, default = 5.0)
     parser.add_argument("--A", type = float, default = 0.1)
-    parser.add_argument("--n_mode", type=int, default=2)
+    parser.add_argument("--n_mode", type=int, default=5)
     parser.add_argument("--use_animation", type = bool, default = True)
     parser.add_argument("--plot_freq", type = int, default = 50)
     parser.add_argument("--save_dir", type = str, default = "./result/")
@@ -70,6 +71,7 @@ if __name__ == "__main__":
     # plot distribution
     generate_distribution_snapshot(snapshot[:,-1], args["save_dir"],"{}_snapshot_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
     generate_distribution_figure(snapshot, args["save_dir"],"{}_evolution_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), xmin = 0, xmax = args['L'], vmin = -10.0, vmax = 10.0)
+    generate_v_distribution_figure(snapshot, args["save_dir"],"{}_evolution_v_dist_{}_{}.png".format(args['simcase'], args['interpol'], args['method']), vmin = -10.0, vmax = 10.0)
 
     if args['use_animation']:
         generate_PIC_gif(snapshot, args['save_dir'], "{}_simulation_{}_{}.gif".format(args['simcase'], args['interpol'], args['method']), 0, args['L'], -10.0, 10.0, args['plot_freq'])
